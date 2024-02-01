@@ -14,3 +14,7 @@ This is day 59 project from 100 days of code: Python pro bootcamp.
 3. Run the app
 
         python main.py
+4. Visit the blog
+        
+        http://localhost:5000
+    type this url inside your browser to see the blog.
