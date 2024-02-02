@@ -1,8 +1,4 @@
 # Flask and Bootstrap Blog
-
-This is day 59 project from 100 days of code: Python pro bootcamp.
-
-
 ## Installation
 
 1. Clone the repository:
