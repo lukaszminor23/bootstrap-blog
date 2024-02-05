@@ -6,7 +6,7 @@
         git clone https://github.com/lukaszminor23/bootstrap-blog.git
 2. Install dependencies:
     
-        pip install requirements.txt
+        pip install -r requirements.txt
 3. Run the app
 
         python main.py
