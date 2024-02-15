@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, URL
+from wtforms.validators import DataRequired, URL, Email
 from flask_ckeditor import CKEditor, CKEditorField
+
 from datetime import date
 from smtplib import SMTP
 from email.message import EmailMessage
@@ -15,10 +16,10 @@ from email.message import EmailMessage
 MY_EMAIL = "Your email"
 PASSWORD = "Your password"
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
+ckeditor = CKEditor(app)
 
 
 # CREATE DATABASE
@@ -46,6 +47,23 @@ with app.app_context():
     db.create_all()
 
 
+class AddPostForm(FlaskForm):
+    title = StringField("Blog post title", validators=[DataRequired()])
+    subtitle = StringField("Subtitle", validators=[DataRequired()])
+    author = StringField("Your name", validators=[DataRequired()])
+    img_url = StringField("Blog image URL", validators=[DataRequired(), URL()])
+    body = CKEditorField("Blog content", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
+class ContactForm(FlaskForm):
+    name = StringField("Your name", validators=[DataRequired()])
+    email = StringField("Your email", validators=[DataRequired(), Email()])
+    phone = StringField("Your phone number", validators=[DataRequired()])
+    message = CKEditorField("Message", validators=[DataRequired()])
+    submit = SubmitField("Send message")
+
+
 @app.route("/")
 def home():
     with app.app_context():
@@ -55,11 +73,16 @@ def home():
 
 @app.route("/contact", methods=['POST', 'GET'])
 def contact():
-    if request.method == 'POST':
-        data = request.form
-        send_email(data["name"], data["email"], data["phone"], data["message"])
-        return render_template("contact.html", msg_sent=True)
-    return render_template("contact.html", msg_sent=False)
+    form = ContactForm()
+    if form.validate_on_submit():
+        send_email(
+            form.name.data,
+            form.email.data,
+            form.phone.data,
+            form.message.data
+        )
+        return render_template("contact.html", msg_sent=True, form=form)
+    return render_template("contact.html", msg_sent=False, form=form)
 
 
 @app.route("/about")
@@ -71,6 +94,24 @@ def about():
 def view_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
     return render_template("post.html", post=requested_post)
+
+
+@app.route("/make-post", methods=['GET', 'POST'])
+def make_post():
+    form = AddPostForm()
+    if form.validate_on_submit():
+        new_post = BlogPost(
+            title=form.title.data,
+            subtitle=form.subtitle.data,
+            date=date.today().strftime("%B %d, %Y"),
+            body=form.body.data,
+            author=form.author.data,
+            img_url=form.img_url.data
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template('make-post.html', form=form)
 
 
 def send_email(name, email, phone, message):
