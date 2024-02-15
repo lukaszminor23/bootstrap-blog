@@ -20,9 +20,9 @@
                     {% for post in posts %}
                     <!-- Post preview-->
                     <div class="post-preview">
-                        <a href="{{ url_for('view_post', index=post.id) }}">
+                        <a href="{{ url_for('view_post', post_id=post.id) }}">
                             <h2 class="post-title">{{ post.title }}</h2>
-                            <h3 class="post-subtitle">{{ post.title }}</h3>
+                            <h3 class="post-subtitle">{{ post.subtitle }}</h3>
                         </a>
                         <p class="post-meta">
                             Posted by
