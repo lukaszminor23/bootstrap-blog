@@ -124,6 +124,14 @@ def edit_post(post_id):
         img_url=post.img_url,
         body=post.body
     )
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.subtitle = form.subtitle.data
+        post.author = form.author.data
+        post.img_url = form.img_url.data
+        post.body = form.body.data
+        db.session.commit()
+        return redirect(url_for('view_post', post_id=post.id))
     return render_template('make-post.html', form=form, is_edit=True)
 
 
