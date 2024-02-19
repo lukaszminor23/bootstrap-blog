@@ -3,10 +3,11 @@ from datetime import date
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from utils.forms import ContactForm, AddPostForm
+from utils.forms import ContactForm, AddPostForm, RegisterForm
 from utils.email import send_email
-from utils.post_model import BlogPost
+from utils.models import BlogPost, User
 from utils.db import db
 
 
@@ -99,6 +100,22 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return redirect(url_for('home'))
+
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        pass_hash = generate_password_hash(form.password.data, salt_length=8)
+        new_user = User(
+            name=form.name.data,
+            email=form.email.data,
+            password=pass_hash
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("register.html", form=form)
 
 
 if __name__ == '__main__':

@@ -19,3 +19,18 @@ class ContactForm(FlaskForm):
     phone = StringField("Your phone number", validators=[DataRequired()])
     message = CKEditorField("Message", validators=[DataRequired()])
     submit = SubmitField("Send message")
+
+
+class RegisterForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    password = StringField("Password", validators=[DataRequired()])
+    submit = SubmitField("Register")
+
+
+class CreatePostForm(FlaskForm):
+    title = StringField("Blog Post Title", validators=[DataRequired()])
+    subtitle = StringField("Subtitle", validators=[DataRequired()])
+    img_url = StringField("Blog Image URL", validators=[DataRequired(), URL()])
+    body = CKEditorField("Blog Content", validators=[DataRequired()])
+    submit = SubmitField("Submit Post")
