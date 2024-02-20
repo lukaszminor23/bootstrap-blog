@@ -4,12 +4,12 @@ from flask import Flask, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import login_user, LoginManager, logout_user, current_user
 
-from utils.forms import AddPostForm, ContactForm, RegisterForm, CreatePostForm, LoginForm
-from utils.utils import send_email, admin_only
-from utils.models import BlogPost, User
-from utils.db import db
+from modules.forms import AddPostForm, ContactForm, RegisterForm, LoginForm
+from modules.utils import send_email, admin_only
+from modules.models import BlogPost, User
+from modules.db import db
 
 
 app = Flask(__name__)
@@ -28,7 +28,7 @@ db.init_app(app)
 def home():
     with app.app_context():
         all_posts = db.session.execute(db.select(BlogPost)).scalars().all()
-    return render_template("index.html", posts=all_posts)
+        return render_template("index.html", posts=all_posts)
 
 
 @app.route("/contact", methods=['POST', 'GET'])
@@ -65,8 +65,8 @@ def make_post():
             title=form.title.data,
             subtitle=form.subtitle.data,
             date=date.today().strftime("%B %d, %Y"),
+            author=current_user,
             body=form.body.data,
-            author=form.author.data,
             img_url=form.img_url.data
         )
         db.session.add(new_post)
@@ -82,14 +82,12 @@ def edit_post(post_id):
     form = AddPostForm(
         title=post.title,
         subtitle=post.subtitle,
-        author=post.author,
         img_url=post.img_url,
         body=post.body
     )
     if form.validate_on_submit():
         post.title = form.title.data
         post.subtitle = form.subtitle.data
-        post.author = form.author.data
         post.img_url = form.img_url.data
         post.body = form.body.data
         db.session.commit()
@@ -154,7 +152,7 @@ def logout():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.get_or_404(User, user_id)
+    return db.session.get(User, user_id)
 
 
 if __name__ == '__main__':
