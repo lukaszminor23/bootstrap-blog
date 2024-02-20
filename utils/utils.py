@@ -1,5 +1,9 @@
 from smtplib import SMTP
 from email.message import EmailMessage
+from functools import wraps
+
+from flask_login import current_user
+from flask import abort
 
 
 def send_email(name, email, phone, message):
@@ -18,3 +22,12 @@ def send_email(name, email, phone, message):
         connection.starttls()
         connection.login(your_email, your_password)
         connection.send_message(msg)
+
+
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.id != 1:
+            return abort(403)
+        return f(*args, **kwargs)
+    return decorated_function

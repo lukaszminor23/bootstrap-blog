@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 
 from utils.forms import AddPostForm, ContactForm, RegisterForm, CreatePostForm, LoginForm
-from utils.email import send_email
+from utils.utils import send_email, admin_only
 from utils.models import BlogPost, User
 from utils.db import db
 
@@ -22,9 +22,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 db.init_app(app)
-
-with app.app_context():
-    db.create_all()
 
 
 @app.route("/")
@@ -60,6 +57,7 @@ def view_post(post_id):
 
 
 @app.route("/make-post", methods=['GET', 'POST'])
+@admin_only
 def make_post():
     form = AddPostForm()
     if form.validate_on_submit():
@@ -78,6 +76,7 @@ def make_post():
 
 
 @app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
+@admin_only
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
     form = AddPostForm(
@@ -99,6 +98,7 @@ def edit_post(post_id):
 
 
 @app.route("/delete-post/<int:post_id>")
+@admin_only
 def delete_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
     db.session.delete(post)
@@ -142,7 +142,7 @@ def login():
             return redirect(url_for('login'))
         else:
             login_user(user)
-            return redirect(url_for('secrets'))
+            return redirect(url_for('home'))
     return render_template('login.html', form=form)
 
 
@@ -158,4 +158,7 @@ def load_user(user_id):
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+
     app.run(debug=True)
