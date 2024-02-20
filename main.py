@@ -57,7 +57,8 @@ def view_post(post_id):
     if form.validate_on_submit():
         new_comment = Comment(
             text=form.comment.data,
-            author=current_user
+            author=current_user,
+            post=requested_post
         )
         db.session.add(new_comment)
         db.session.commit()
