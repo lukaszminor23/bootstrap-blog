@@ -6,9 +6,9 @@ from flask_ckeditor import CKEditor
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, LoginManager, logout_user, current_user
 
-from modules.forms import AddPostForm, ContactForm, RegisterForm, LoginForm
+from modules.forms import AddPostForm, ContactForm, RegisterForm, LoginForm, CommentForm
 from modules.utils import send_email, admin_only
-from modules.models import BlogPost, User
+from modules.models import BlogPost, User, Comment
 from modules.db import db
 
 
@@ -50,10 +50,18 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/post/<int:post_id>")
+@app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def view_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    form = CommentForm()
+    if form.validate_on_submit():
+        new_comment = Comment(
+            text=form.comment.data,
+            author=current_user
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+    return render_template("post.html", post=requested_post, form=form)
 
 
 @app.route("/make-post", methods=['GET', 'POST'])
