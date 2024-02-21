@@ -1,7 +1,7 @@
 import datetime
 from datetime import date
 
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user
 
@@ -156,7 +156,15 @@ def logout():
     return redirect(url_for('home'))
 
 
-
+@app.route("/delete-comment")
+@admin_only
+def delete_comment():
+    comment_id = request.args.get("comment_id")
+    post_id = request.args.get("post_id")
+    comment = db.session.get(Comment, comment_id)
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for('view_post', post_id=post_id))
 
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ class BlogPost(db.Model):
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
-    comments = relationship("Comment", back_populates="post")
+    comments = relationship("Comment", back_populates="post", cascade="all, delete")
 
 
 class Comment(db.Model):
