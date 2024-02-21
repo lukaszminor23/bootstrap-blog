@@ -1,5 +1,4 @@
-import datetime
-from datetime import date
+from datetime import date, datetime
 
 from flask import render_template, redirect, url_for, flash, request
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -52,7 +51,7 @@ def view_post(post_id):
                 text=form.comment.data,
                 author=current_user,
                 post=requested_post,
-                time=datetime.datetime.now()
+                time=datetime.now()
             )
             db.session.add(new_comment)
             db.session.commit()
@@ -60,6 +59,17 @@ def view_post(post_id):
             flash("You must be logged in to post comments. Please log in.")
             return redirect(url_for('login'))
     return render_template("post.html", post=requested_post, form=form)
+
+
+@app.route("/delete-comment")
+@admin_only
+def delete_comment():
+    comment_id = request.args.get("comment_id")
+    post_id = request.args.get("post_id")
+    comment = db.session.get(Comment, comment_id)
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for('view_post', post_id=post_id))
 
 
 @app.route("/make-post", methods=['GET', 'POST'])
@@ -154,17 +164,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
-
-@app.route("/delete-comment")
-@admin_only
-def delete_comment():
-    comment_id = request.args.get("comment_id")
-    post_id = request.args.get("post_id")
-    comment = db.session.get(Comment, comment_id)
-    db.session.delete(comment)
-    db.session.commit()
-    return redirect(url_for('view_post', post_id=post_id))
 
 
 if __name__ == '__main__':
