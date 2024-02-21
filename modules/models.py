@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Integer, String, Text, DateTime
 from flask_login import UserMixin
 
 from config import db
@@ -36,3 +36,4 @@ class Comment(db.Model):
     post_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("blog_post.id"))
     post = relationship("BlogPost", back_populates="comments")
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    time: Mapped[str] = mapped_column(DateTime, nullable=False)

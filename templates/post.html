@@ -43,8 +43,10 @@
                 </div>
                 <div class="commentText">
                   {{ comment.text|safe }}
-                  <span class="sub-text">{{ comment.author.name }}</span>
+                  <span class="sub-text">{{ comment.author.name }}, </span>
+                  <span class="comment-date">{{ comment.time.strftime("%b %d, %Y at %H:%M") }}</span>
                 </div>
+
               </li>
               {% endfor %}
             </ul>

@@ -1,3 +1,4 @@
+import datetime
 from datetime import date
 
 from flask import render_template, redirect, url_for, flash
@@ -50,7 +51,8 @@ def view_post(post_id):
             new_comment = Comment(
                 text=form.comment.data,
                 author=current_user,
-                post=requested_post
+                post=requested_post,
+                time=datetime.datetime.now()
             )
             db.session.add(new_comment)
             db.session.commit()
@@ -152,6 +154,9 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+
+
 
 
 if __name__ == '__main__':

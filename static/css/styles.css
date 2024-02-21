@@ -10840,6 +10840,13 @@ header.masthead .post-heading .meta a {
 }
 
 .sub-text {
+    color:#808080;
+    font-family:verdana;
+    font-weigh:bold;
+    font-size:14px;
+}
+
+.comment-date {
     color:#aaa;
     font-family:verdana;
     font-size:13px;
