@@ -1,27 +1,18 @@
 from datetime import date
 
-from flask import Flask, render_template, redirect, url_for, flash
-from flask_bootstrap import Bootstrap5
-from flask_ckeditor import CKEditor
+from flask import render_template, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, LoginManager, logout_user, current_user
+from flask_login import login_user, logout_user, current_user
 
 from modules.forms import AddPostForm, ContactForm, RegisterForm, LoginForm, CommentForm
 from modules.utils import send_email, admin_only
 from modules.models import BlogPost, User, Comment
-from modules.db import db
+from config import db, app, login_manager
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
-Bootstrap5(app)
-ckeditor = CKEditor(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-db.init_app(app)
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
 
 
 @app.route("/")
@@ -55,13 +46,17 @@ def view_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
     form = CommentForm()
     if form.validate_on_submit():
-        new_comment = Comment(
-            text=form.comment.data,
-            author=current_user,
-            post=requested_post
-        )
-        db.session.add(new_comment)
-        db.session.commit()
+        if current_user.is_authenticated:
+            new_comment = Comment(
+                text=form.comment.data,
+                author=current_user,
+                post=requested_post
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+        else:
+            flash("You must be logged in to post comments. Please log in.")
+            return redirect(url_for('login'))
     return render_template("post.html", post=requested_post, form=form)
 
 
@@ -107,7 +102,7 @@ def edit_post(post_id):
 @app.route("/delete-post/<int:post_id>")
 @admin_only
 def delete_post(post_id):
-    post = db.get_or_404(BlogPost, post_id)
+    post = db.session.get(BlogPost, post_id)
     db.session.delete(post)
     db.session.commit()
     return redirect(url_for('home'))
@@ -157,11 +152,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(User, user_id)
 
 
 if __name__ == '__main__':
